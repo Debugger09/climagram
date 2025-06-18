@@ -4,6 +4,7 @@ import { fr } from "date-fns/locale";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Post } from "../types";
+import WeatherIcon from "./WeatherIcon";
 
 const getMoodEmoji = (mood: Post["mood"]) => {
   switch (mood) {
@@ -76,11 +77,7 @@ export const PostCard: React.FC<{ post: Post }> = ({ post }) => {
 
       <View style={styles.weatherContainer}>
         <View style={styles.weatherInfo}>
-          <Ionicons
-            name={getWeatherIcon(post.weather.icon)}
-            size={40}
-            color="#666"
-          />
+          <WeatherIcon description={post.weather.description} size={40} color="#666" />
           <View>
             <Text style={styles.temperature}>
               {Math.round(post.weather.temp)}°C

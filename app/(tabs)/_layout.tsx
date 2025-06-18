@@ -22,20 +22,19 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="feed"
         options={{
-          title: "Climagram",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          title: "Fil",
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
+          headerTitle: "Fil d'actualités météo",
         }}
       />
       <Tabs.Screen
         name="cities"
         options={{
           title: "Villes",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="location" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="location" size={24} color={color} />
           ),
           headerTitle: "Météo des villes",
         }}
@@ -44,29 +43,17 @@ export default function TabLayout() {
         name="publish"
         options={{
           title: "Publier",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="add-circle" size={24} color={color} />
           ),
           headerTitle: "Nouvelle publication",
-        }}
-      />
-      <Tabs.Screen
-        name="feed"
-        options={{
-          title: "Fil",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="newspaper" size={size} color={color} />
-          ),
-          headerTitle: "Fil d'actualités météo",
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "Moi",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
           headerTitle: "Mon journal météo",
         }}
       />

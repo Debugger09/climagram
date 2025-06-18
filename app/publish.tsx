@@ -131,7 +131,7 @@ export default function PublishScreen() {
             <View style={styles.weatherPreview}>
               <View style={styles.weatherHeader}>
                 <Text style={styles.weatherTitle}>Météo actuelle - {selectedCity.name}</Text>
-                <WeatherIcon condition={weather.main} size={32} color="#FFFFFF" />
+                <WeatherIcon description={weather.description} size={32} color="#FFFFFF" />
               </View>
               <View style={styles.weatherInfo}>
                 <Text style={styles.temperature}>{weather.temp}°C</Text>

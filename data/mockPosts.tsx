@@ -1,4 +1,5 @@
 import { cities } from "@/constants/cities"
+import { MOODS } from "@/constants/moods"
 import type { Post } from "@/types/post"
 
 export const mockPosts: Post[] = [
@@ -7,7 +8,7 @@ export const mockPosts: Post[] = [
     city: "Yaoundé",
     lat: cities[0].lat,
     lon: cities[0].lon,
-    mood: "heureux",
+    mood: MOODS[0],
     comment: "Belle journée ensoleillée dans la capitale. Parfait pour une promenade au parc!",
     weather: {
       temp: 28,
@@ -24,7 +25,7 @@ export const mockPosts: Post[] = [
     city: "Douala",
     lat: cities[1].lat,
     lon: cities[1].lon,
-    mood: "fatigué",
+    mood: MOODS[3],
     comment: "La chaleur est accablante aujourd'hui. Difficile de rester productif.",
     weather: {
       temp: 32,
@@ -41,7 +42,7 @@ export const mockPosts: Post[] = [
     city: "Bafoussam",
     lat: cities[4].lat,
     lon: cities[4].lon,
-    mood: "énergique",
+    mood: MOODS[2],
     comment: "La fraîcheur des hauts plateaux me donne de l'énergie pour toute la journée!",
     weather: {
       temp: 22,

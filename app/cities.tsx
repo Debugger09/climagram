@@ -40,7 +40,7 @@ function CityWeatherCard({ city, onPress }: CityWeatherCardProps) {
             )}
           </View>
           <View style={styles.weatherIconContainer}>
-            {weather && !loading && <WeatherIcon condition={weather.main} size={40} color="#FFFFFF" />}
+            {weather && !loading && <WeatherIcon description={weather.description} size={40} color="#FFFFFF" />}
           </View>
         </View>
       </LinearGradient>
@@ -105,7 +105,7 @@ export default function CitiesScreen() {
             </View>
             <View style={styles.locationTemp}>
               <Text style={styles.tempValue}>20°C</Text>
-              <WeatherIcon condition="thunderstorm" size={32} color="#FFFFFF" />
+              <WeatherIcon description="orage" size={32} color="#FFFFFF" />
             </View>
           </View>
         </LinearGradient>

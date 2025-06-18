@@ -6,7 +6,7 @@ export type City = {
 
 export type Mood = "heureux" | "triste" | "energique" | "fatigue" | "neutre"
 
-export type Weather = {
+export interface Weather {
   temp: number
   feels_like: number
   description: string
@@ -15,9 +15,9 @@ export type Weather = {
   windDeg: number
   pressure: number
   clouds: number
-  uvi: number
   main: string
   icon: string
+  uvi: number
   sunrise: number
   sunset: number
   hourly: Array<{
@@ -37,7 +37,7 @@ export type Weather = {
   }>
 }
 
-export type Post = {
+export interface Post {
   id: string
   city: string
   lat: number
@@ -46,4 +46,14 @@ export type Post = {
   comment: string
   weather: Weather
   timestamp: string
+  userId?: string
+  likes?: number
+  comments?: Comment[]
+}
+
+export interface Comment {
+  id: string
+  content: string
+  userId: string
+  createdAt: Date
 }

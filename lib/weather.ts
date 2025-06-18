@@ -1,7 +1,7 @@
 import type { Weather } from '@/types';
 
 const API_KEY = '11bd9423b7783958d0d1cef64b6dfe4d';
-const BASE_URL = 'https://api.openweathermap.org/data/3.0/onecall';
+const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
 export const getWeather = async (lat: number, lon: number): Promise<Weather> => {
   try {
@@ -10,41 +10,27 @@ export const getWeather = async (lat: number, lon: number): Promise<Weather> => 
     );
     const data = await response.json();
 
-    // On utilise les données actuelles (current)
-    const current = data.current;
-    const weather = current.weather[0];
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch weather data');
+    }
 
     return {
-      temp: Math.round(current.temp),
-      feels_like: Math.round(current.feels_like),
-      description: weather.description,
-      humidity: current.humidity,
-      windSpeed: current.wind_speed,
-      windDeg: current.wind_deg,
-      pressure: current.pressure,
-      clouds: current.clouds,
-      uvi: current.uvi,
-      main: weather.main,
-      icon: weather.icon,
-      sunrise: data.current.sunrise,
-      sunset: data.current.sunset,
-      // Prévisions pour les prochaines heures
-      hourly: data.hourly.slice(0, 24).map((hour: any) => ({
-        dt: hour.dt,
-        temp: Math.round(hour.temp),
-        icon: hour.weather[0].icon,
-        description: hour.weather[0].description,
-      })),
-      // Prévisions pour les prochains jours
-      daily: data.daily.slice(0, 7).map((day: any) => ({
-        dt: day.dt,
-        temp: {
-          min: Math.round(day.temp.min),
-          max: Math.round(day.temp.max),
-        },
-        icon: day.weather[0].icon,
-        description: day.weather[0].description,
-      })),
+      temp: Math.round(data.main.temp),
+      feels_like: Math.round(data.main.feels_like),
+      description: data.weather[0].description,
+      humidity: data.main.humidity,
+      windSpeed: data.wind.speed,
+      windDeg: data.wind.deg,
+      pressure: data.main.pressure,
+      clouds: data.clouds.all,
+      main: data.weather[0].main,
+      icon: data.weather[0].icon,
+      // Ces champs ne sont pas disponibles dans l'API gratuite
+      uvi: 0,
+      sunrise: 0,
+      sunset: 0,
+      hourly: [],
+      daily: [],
     };
   } catch (error) {
     console.error('Error fetching weather:', error);
