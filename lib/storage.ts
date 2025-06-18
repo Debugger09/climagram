@@ -1,18 +1,15 @@
-import type { Post } from "@/types";
+import type { Post } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@climagram_posts';
 
-// Simulation du stockage local (en production, utiliser AsyncStorage)
-let posts: Post[] = []
-
-export const savePosts = async (newPosts: Post[]) => {
+export const savePosts = async (posts: Post[]) => {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newPosts));
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
   } catch (error) {
     console.error('Error saving posts:', error);
   }
-}
+};
 
 export const loadPosts = async (): Promise<Post[]> => {
   try {
@@ -22,17 +19,4 @@ export const loadPosts = async (): Promise<Post[]> => {
     console.error('Error loading posts:', error);
     return [];
   }
-}
-
-export const getPosts = (): Post[] => {
-  return posts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-}
-
-export const addPost = (post: Post) => {
-  posts.unshift(post)
-}
-
-export const getUserPosts = (): Post[] => {
-  // En production, filtrer par userId
-  return posts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-}
+}; 

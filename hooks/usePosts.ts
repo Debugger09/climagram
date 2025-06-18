@@ -1,52 +1,71 @@
 "use client"
 
-import { getPosts, getUserPosts, addPost as savePost } from "@/lib/storage"
-import type { Post } from "@/types"
-import { useEffect, useState } from "react"
+import type { Post } from "@/types/post"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useCallback, useEffect, useState } from "react"
 
-export const usePosts = () => {
+const POSTS_STORAGE_KEY = "climagram_posts"
+
+export async function savePosts(posts: Post[]) {
+  try {
+    await AsyncStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts))
+  } catch (error) {
+    console.error("Error saving posts:", error)
+  }
+}
+
+export async function loadPosts(): Promise<Post[]> {
+  try {
+    const postsJson = await AsyncStorage.getItem(POSTS_STORAGE_KEY)
+    return postsJson ? JSON.parse(postsJson) : []
+  } catch (error) {
+    console.error("Error loading posts:", error)
+    return []
+  }
+}
+
+export function usePosts() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const loadPosts = () => {
-      const allPosts = getPosts()
-      setPosts(allPosts)
+  const refreshPosts = useCallback(async () => {
+    setLoading(true)
+    try {
+      const loadedPosts = await loadPosts()
+      setPosts(loadedPosts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()))
+    } catch (error) {
+      console.error("Error refreshing posts:", error)
+    } finally {
       setLoading(false)
     }
-
-    loadPosts()
   }, [])
 
-  const addPost = (post: Post) => {
-    savePost(post)
-    setPosts(getPosts())
-  }
+  const addPost = useCallback(
+    async (post: Post) => {
+      const updatedPosts = [post, ...posts]
+      setPosts(updatedPosts)
+      await savePosts(updatedPosts)
+    },
+    [posts],
+  )
 
-  const refreshPosts = () => {
-    setPosts(getPosts())
-  }
+  useEffect(() => {
+    refreshPosts()
+  }, [refreshPosts])
 
-  return { posts, loading, addPost, refreshPosts }
+  return { posts, loading, refreshPosts, addPost }
 }
 
-export const useUserPosts = () => {
-  const [userPosts, setUserPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
+export function useUserPosts() {
+  const { posts, loading, refreshPosts } = usePosts()
 
-  useEffect(() => {
-    const loadUserPosts = () => {
-      const posts = getUserPosts()
-      setUserPosts(posts)
-      setLoading(false)
-    }
+  // Dans une vraie app, on filtrerait par l'ID de l'utilisateur connecté
+  // Ici on simule que tous les posts sont de l'utilisateur actuel
+  const userPosts = posts
 
-    loadUserPosts()
-  }, [])
-
-  const refreshUserPosts = () => {
-    setUserPosts(getUserPosts())
-  }
+  const refreshUserPosts = useCallback(() => {
+    refreshPosts()
+  }, [refreshPosts])
 
   return { userPosts, loading, refreshUserPosts }
 }

@@ -1,145 +1,232 @@
-import { MOODS } from "@/constants/config"
-import type { Post } from "@/types"
-import { Ionicons } from "@expo/vector-icons"
-import { StyleSheet, Text, View } from "react-native"
+import { Ionicons } from "@expo/vector-icons";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { Post } from "../types";
 
-type Props = {
-  post: Post
-  showAuthor?: boolean
-}
+const getMoodEmoji = (mood: Post["mood"]) => {
+  switch (mood) {
+    case "heureux":
+      return "😊";
+    case "triste":
+      return "😢";
+    case "energique":
+      return "⚡";
+    case "fatigue":
+      return "😴";
+    default:
+      return "😐";
+  }
+};
 
-export default function PostCard({ post, showAuthor = true }: Props) {
-  const moodData = MOODS.find((m) => m.value === post.mood)
-  const timeAgo = getTimeAgo(post.timestamp)
+const getMoodColor = (mood: Post["mood"]) => {
+  switch (mood) {
+    case "heureux":
+      return "#FFD700";
+    case "triste":
+      return "#87CEEB";
+    case "energique":
+      return "#FF4500";
+    case "fatigue":
+      return "#9370DB";
+    default:
+      return "#A9A9A9";
+  }
+};
+
+const getWeatherIcon = (icon: string) => {
+  const iconMap: { [key: string]: string } = {
+    "01d": "sunny",
+    "01n": "moon",
+    "02d": "partly-sunny",
+    "02n": "cloudy-night",
+    "03d": "cloudy",
+    "03n": "cloudy",
+    "04d": "cloudy",
+    "04n": "cloudy",
+    "09d": "rainy",
+    "09n": "rainy",
+    "10d": "rainy",
+    "10n": "rainy",
+    "11d": "thunderstorm",
+    "11n": "thunderstorm",
+    "13d": "snow",
+    "13n": "snow",
+    "50d": "water",
+    "50n": "water",
+  };
+  return iconMap[icon] || "partly-sunny";
+};
+
+export const PostCard: React.FC<{ post: Post }> = ({ post }) => {
+  const formattedDate = format(new Date(post.timestamp), "d MMMM yyyy", {
+    locale: fr,
+  });
 
   return (
-    <View style={styles.container}>
+    <View style={styles.card}>
       <View style={styles.header}>
-        <View style={styles.locationInfo}>
-          <Ionicons name="location" size={16} color="#007AFF" />
-          <Text style={styles.city}>{post.city}</Text>
+        <View style={styles.locationContainer}>
+          <Ionicons name="location" size={20} color="#666" />
+          <Text style={styles.location}>{post.city}</Text>
         </View>
-        <Text style={styles.timestamp}>{timeAgo}</Text>
+        <Text style={styles.date}>{formattedDate}</Text>
       </View>
 
-      <View style={styles.weatherSection}>
+      <View style={styles.weatherContainer}>
         <View style={styles.weatherInfo}>
-          <Text style={styles.temperature}>{post.weather.temp}°C</Text>
-          <Text style={styles.weatherDescription}>{post.weather.description}</Text>
+          <Ionicons
+            name={getWeatherIcon(post.weather.icon)}
+            size={40}
+            color="#666"
+          />
+          <View>
+            <Text style={styles.temperature}>
+              {Math.round(post.weather.temp)}°C
+            </Text>
+            <Text style={styles.description}>
+              {post.weather.description}
+            </Text>
+          </View>
         </View>
-        <View style={styles.humidityInfo}>
-          <Ionicons name="water" size={16} color="#007AFF" />
-          <Text style={styles.humidity}>{post.weather.humidity}%</Text>
+        <View style={styles.weatherDetails}>
+          <View style={styles.detail}>
+            <Ionicons name="water" size={16} color="#666" />
+            <Text style={styles.detailText}>
+              {post.weather.humidity}%
+            </Text>
+          </View>
+          <View style={styles.detail}>
+            <Ionicons name="speedometer" size={16} color="#666" />
+            <Text style={styles.detailText}>
+              {post.weather.pressure} hPa
+            </Text>
+          </View>
+          <View style={styles.detail}>
+            <Ionicons name="cloud" size={16} color="#666" />
+            <Text style={styles.detailText}>
+              {post.weather.clouds}%
+            </Text>
+          </View>
         </View>
       </View>
 
-      <View style={styles.moodSection}>
-        <View style={[styles.moodBadge, { backgroundColor: moodData?.color + "20" }]}>
-          <Text style={[styles.moodText, { color: moodData?.color }]}>{moodData?.label}</Text>
+      <View style={styles.moodContainer}>
+        <View
+          style={[
+            styles.moodBadge,
+            { backgroundColor: getMoodColor(post.mood) },
+          ]}
+        >
+          <Text style={styles.moodEmoji}>{getMoodEmoji(post.mood)}</Text>
+          <Text style={styles.moodText}>{post.mood}</Text>
         </View>
       </View>
 
       <Text style={styles.comment}>{post.comment}</Text>
     </View>
-  )
-}
-
-function getTimeAgo(timestamp: string): string {
-  const now = new Date()
-  const postTime = new Date(timestamp)
-  const diffInMinutes = Math.floor((now.getTime() - postTime.getTime()) / (1000 * 60))
-
-  if (diffInMinutes < 1) return "À l'instant"
-  if (diffInMinutes < 60) return `Il y a ${diffInMinutes}min`
-
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  if (diffInHours < 24) return `Il y a ${diffInHours}h`
-
-  const diffInDays = Math.floor(diffInHours / 24)
-  return `Il y a ${diffInDays}j`
-}
+  );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+  card: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 15,
+    marginVertical: 8,
+    marginHorizontal: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 15,
   },
-  locationInfo: {
+  locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
   },
-  city: {
+  location: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1D1D1F",
+    marginLeft: 5,
+    color: "#333",
   },
-  timestamp: {
-    fontSize: 12,
-    color: "#8E8E93",
+  date: {
+    fontSize: 14,
+    color: "#666",
   },
-  weatherSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-    padding: 12,
-    backgroundColor: "#F8F9FA",
-    borderRadius: 8,
+  weatherContainer: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
   },
   weatherInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    marginBottom: 10,
   },
   temperature: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#007AFF",
+    color: "#333",
+    marginLeft: 10,
   },
-  weatherDescription: {
-    fontSize: 14,
-    color: "#1D1D1F",
+  description: {
+    fontSize: 16,
+    color: "#666",
+    marginLeft: 10,
     textTransform: "capitalize",
   },
-  humidityInfo: {
+  weatherDetails: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    paddingTop: 10,
+  },
+  detail: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
   },
-  humidity: {
+  detailText: {
+    marginLeft: 5,
+    color: "#666",
     fontSize: 14,
-    color: "#007AFF",
   },
-  moodSection: {
-    marginBottom: 12,
+  moodContainer: {
+    marginBottom: 15,
   },
   moodBadge: {
+    flexDirection: "row",
+    alignItems: "center",
     alignSelf: "flex-start",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 20,
+  },
+  moodEmoji: {
+    fontSize: 18,
+    marginRight: 5,
   },
   moodText: {
-    fontSize: 14,
-    fontWeight: "500",
+    color: "white",
+    fontWeight: "600",
+    textTransform: "capitalize",
   },
   comment: {
     fontSize: 16,
+    color: "#333",
     lineHeight: 22,
-    color: "#1D1D1F",
   },
-})
+});
