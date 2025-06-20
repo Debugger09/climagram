@@ -25,7 +25,7 @@ export default function Register() {
 
     try {
       await signUp(email, password);
-      router.replace("/(tabs)");
+      router.replace('/(tabs)/feed');
     } catch (err) {
       Alert.alert("Erreur", error || "Une erreur est survenue lors de l'inscription");
     }

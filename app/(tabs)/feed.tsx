@@ -1,100 +1,137 @@
+import { PostCard } from '@/components/PostCard';
+import type { Post } from '@/types';
+import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { cities } from '../../constants/cities';
 import { useAuth } from '../../hooks/useAuth';
-import { addComment, getPosts, likePost, Post } from '../../lib/mockData';
+import { getPosts } from '../../lib/mockData';
 
 export default function FeedScreen() {
   const { user } = useAuth();
   const posts = getPosts();
   const [commentText, setCommentText] = useState('');
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedMood, setSelectedMood] = useState<string>('');
+  const [postsState, setPostsState] = useState<Post[]>(posts);
+
+  const moodOptions = [
+    { value: '', label: 'Toutes les humeurs' },
+    { value: 'heureux', label: 'Heureux' },
+    { value: 'fatigué', label: 'Fatigué' },
+    { value: 'apathique', label: 'Apathique' },
+    { value: 'énergique', label: 'Énergique' },
+  ];
+
+  const filteredPosts = posts.filter(post => {
+    const cityMatch = !selectedCity || post.city === selectedCity;
+    const moodMatch = !selectedMood || post.mood === selectedMood;
+    return cityMatch && moodMatch;
+  });
 
   const handleLike = (postId: string) => {
-    likePost(postId);
+    setPostsState(prevPosts => prevPosts.map(post =>
+      post.id === postId ? { ...post, likes: post.likes + 1 } : post
+    ));
   };
 
   const handleAddComment = (postId: string) => {
     if (!commentText.trim()) return;
-
-    addComment(postId, {
-      userId: user?.id || '1',
-      text: commentText.trim(),
-    });
-
+    setPostsState(prevPosts => prevPosts.map(post =>
+      post.id === postId
+        ? {
+            ...post,
+            comments: [
+              ...post.comments,
+              {
+                id: Math.random().toString(36).substr(2, 9),
+                userId: '1', // utilisateur courant mocké
+                content: commentText.trim(),
+                createdAt: new Date().toISOString(),
+              },
+            ],
+          }
+        : post
+    ));
     setCommentText('');
     setSelectedPostId(null);
   };
 
-  const renderPost = ({ item: post }: { item: Post }) => (
-    <View style={styles.post}>
-      <View style={styles.postHeader}>
-        <Image
-          source={{ uri: post.userId === '1' ? 'https://i.pravatar.cc/150?img=1' : 'https://i.pravatar.cc/150?img=2' }}
-          style={styles.avatar}
-        />
-        <View style={styles.postInfo}>
-          <Text style={styles.username}>{post.userId === '1' ? 'john_doe' : 'jane_smith'}</Text>
-          <Text style={styles.location}>{post.location}</Text>
-        </View>
-        <View style={styles.weather}>
-          <Text style={styles.weatherIcon}>{post.weather.icon}</Text>
-          <Text style={styles.temperature}>{post.weather.temperature}°C</Text>
-        </View>
-      </View>
-
-      <Image source={{ uri: post.image }} style={styles.postImage} />
-
-      <View style={styles.postActions}>
-        <TouchableOpacity onPress={() => handleLike(post.id)}>
-          <Text style={styles.actionButton}>❤️ {post.likes}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSelectedPostId(post.id)}>
-          <Text style={styles.actionButton}>💬 {post.comments.length}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.postCaption}>
-        <Text style={styles.captionText}>
-          <Text style={styles.username}>{post.userId === '1' ? 'john_doe' : 'jane_smith'}</Text> {post.caption}
-        </Text>
-      </View>
-
-      {post.comments.length > 0 && (
-        <View style={styles.comments}>
-          {post.comments.map(comment => (
-            <Text key={comment.id} style={styles.comment}>
-              <Text style={styles.username}>{comment.userId === '1' ? 'john_doe' : 'jane_smith'}</Text> {comment.text}
-            </Text>
-          ))}
-        </View>
-      )}
-
-      {selectedPostId === post.id && (
-        <View style={styles.commentInput}>
-          <TextInput
-            style={styles.input}
-            placeholder="Add a comment..."
-            value={commentText}
-            onChangeText={setCommentText}
-            onSubmitEditing={() => handleAddComment(post.id)}
-          />
-          <TouchableOpacity 
-            style={styles.commentButton}
-            onPress={() => handleAddComment(post.id)}
-          >
-            <Text style={styles.commentButtonText}>Post</Text>
+  const renderPost = ({ item: post }: { item: Post }) => {
+    return (
+      <View style={styles.post}>
+        <PostCard post={post} />
+        <View style={styles.likesRow}>
+          <TouchableOpacity onPress={() => handleLike(post.id)}>
+            <Text style={styles.likeButton}>❤️ {post.likes}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setSelectedPostId(post.id)}>
+            <Text style={styles.commentIcon}>💬 {post.comments.length}</Text>
           </TouchableOpacity>
         </View>
-      )}
-    </View>
-  );
+        <View style={styles.commentsSection}>
+          {selectedPostId === post.id && (
+            <>
+              {post.comments.map(comment => (
+                <Text key={comment.id} style={styles.commentLine}>
+                  <Text style={styles.commentAuthor}>{comment.userId === '1' ? 'Moi' : 'Autre'}: </Text>
+                  {comment.content}
+                </Text>
+              ))}
+              <View style={styles.commentInputRow}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ajouter un commentaire..."
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  onSubmitEditing={() => handleAddComment(post.id)}
+                />
+                <TouchableOpacity style={styles.commentButton} onPress={() => handleAddComment(post.id)}>
+                  <Text style={styles.commentButtonText}>Envoyer</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+          <TouchableOpacity onPress={() => setSelectedPostId(post.id)}>
+            <Text style={styles.addCommentLink}>Ajouter un commentaire</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
+      <View style={{ padding: 10, backgroundColor: '#f5f5f5', flexDirection: 'row', gap: 10 }}>
+        <View style={{ flex: 1, marginRight: 5 }}>
+          <Picker
+            selectedValue={selectedCity}
+            onValueChange={setSelectedCity}
+            style={{ backgroundColor: '#fff', borderRadius: 8 }}
+          >
+            <Picker.Item label="Toutes les villes" value="" />
+            {cities.map(city => (
+              <Picker.Item key={city.name} label={city.name} value={city.name} />
+            ))}
+          </Picker>
+        </View>
+        <View style={{ flex: 1, marginLeft: 5 }}>
+          <Picker
+            selectedValue={selectedMood}
+            onValueChange={setSelectedMood}
+            style={{ backgroundColor: '#fff', borderRadius: 8 }}
+          >
+            {moodOptions.map(option => (
+              <Picker.Item key={option.value} label={option.label} value={option.value} />
+            ))}
+          </Picker>
+        </View>
+      </View>
       <FlatList
-        data={posts}
+        data={filteredPosts}
         renderItem={renderPost}
-        keyExtractor={post => post.id}
+        keyExtractor={(post: Post) => post.id}
         showsVerticalScrollIndicator={true}
       />
     </View>
@@ -115,22 +152,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  postInfo: {
-    marginLeft: 10,
-    flex: 1,
-  },
   username: {
     fontWeight: 'bold',
     fontSize: 14,
+    color: '#1e3c72',
+    marginBottom: 2,
   },
-  location: {
-    fontSize: 12,
+  city: {
+    fontSize: 13,
     color: '#666',
+    marginBottom: 2,
+  },
+  date: {
+    fontSize: 12,
+    color: '#999',
+  },
+  postImage: {
+    width: '100%',
+    height: 400,
   },
   weather: {
     flexDirection: 'row',
@@ -144,38 +183,64 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-  postImage: {
-    width: '100%',
-    height: 400,
+  weatherDesc: {
+    fontSize: 12,
+    color: '#666',
   },
-  postActions: {
-    flexDirection: 'row',
+  moodRow: {
     padding: 10,
   },
-  actionButton: {
-    marginRight: 20,
-    fontSize: 16,
+  moodEmoji: {
+    fontSize: 20,
   },
-  postCaption: {
+  comment: {
+    padding: 10,
+  },
+  likesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 10,
-    marginBottom: 5,
+    marginBottom: 4,
   },
-  captionText: {
-    fontSize: 14,
+  likeButton: {
+    fontSize: 16,
+    color: '#e74c3c',
+    marginRight: 12,
   },
-  comments: {
+  commentsSection: {
     paddingHorizontal: 10,
     paddingBottom: 10,
   },
-  comment: {
-    fontSize: 14,
-    marginBottom: 5,
+  commentLine: {
+    fontSize: 13,
+    color: '#333',
+    marginBottom: 2,
   },
-  commentInput: {
+  commentAuthor: {
+    fontWeight: 'bold',
+    color: '#1e3c72',
+  },
+  commentInputRow: {
     flexDirection: 'row',
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    alignItems: 'center',
+    marginTop: 6,
+    marginBottom: 6,
+  },
+  addCommentLink: {
+    color: '#1a73e8',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  commentButton: {
+    marginLeft: 8,
+    backgroundColor: '#1a73e8',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  commentButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   input: {
     flex: 1,
@@ -183,14 +248,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 8,
-    marginRight: 10,
     fontSize: 14,
   },
-  commentButton: {
-    justifyContent: 'center',
-  },
-  commentButtonText: {
+  commentIcon: {
+    fontSize: 16,
     color: '#1a73e8',
-    fontWeight: 'bold',
+    marginLeft: 12,
   },
 }); 

@@ -4,7 +4,7 @@ export type City = {
   lon: number
 }
 
-export type Mood = "heureux" | "triste" | "energique" | "fatigue" | "neutre"
+export type Mood = "heureux" | "fatigué" | "apathique" | "énergique"
 
 export interface Weather {
   temp: number
@@ -46,14 +46,16 @@ export interface Post {
   comment: string
   weather: Weather
   timestamp: string
-  userId?: string
-  likes?: number
-  comments?: Comment[]
+  image: string
+  likes: number
+  comments: Comment[]
+  username: string
+  avatar?: string
 }
 
 export interface Comment {
   id: string
-  content: string
   userId: string
-  createdAt: Date
+  content: string
+  createdAt: string
 }

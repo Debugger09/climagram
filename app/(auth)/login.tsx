@@ -12,7 +12,7 @@ export default function LoginScreen() {
     try {
       const success = await signIn(email, password);
       if (success) {
-        router.replace('/feed' as any);
+        router.replace('/(tabs)/feed');
       }
     } catch (error) {
       console.error('Login error:', error);

@@ -6,8 +6,8 @@ import { useWeather } from "@/hooks/useWeather"
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import { router } from "expo-router"
-import { useState } from "react"
-import { ActivityIndicator, FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import React, { useState } from "react"
+import { ActivityIndicator, FlatList, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 interface CityWeatherCardProps {
   city: (typeof cities)[0]
@@ -15,7 +15,7 @@ interface CityWeatherCardProps {
 }
 
 function CityWeatherCard({ city, onPress }: CityWeatherCardProps) {
-  const { weather, loading } = useWeather(city.lat, city.lon)
+  const { data: weather, isLoading: loading } = useWeather(city.lat, city.lon)
 
   return (
     <TouchableOpacity style={styles.cityCard} onPress={onPress}>
@@ -71,57 +71,64 @@ export default function CitiesScreen() {
       end={{ x: 1, y: 1 }}
     >
       <StatusBar barStyle="light-content" backgroundColor="#1e3c72" />
-
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.greeting}>Hello Arian,</Text>
-          <Text style={styles.subtitle}>Discover the weather</Text>
-        </View>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="search" size={20} color="#FFFFFF" />
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => {
+            if (router.canGoBack && router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/feed');
+            }
+          }}>
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.currentLocationCard}>
-        <LinearGradient
-          colors={["rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 0.1)"]}
-          style={styles.locationGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={styles.locationContent}>
-            <View>
-              <Text style={styles.locationLabel}>Current location</Text>
-              <Text style={styles.locationName}>Yaoundé</Text>
-              <Text style={styles.locationWeather}>Thunder</Text>
-            </View>
-            <View style={styles.locationTemp}>
-              <Text style={styles.tempValue}>20°C</Text>
-              <WeatherIcon description="orage" size={32} color="#FFFFFF" />
-            </View>
+          <View style={styles.headerContent}>
+            <Text style={styles.greeting}>Hello Kuito Ouandji Ange Lugresse,</Text>
+            <Text style={styles.subtitle}>Discover the weather</Text>
           </View>
-        </LinearGradient>
-      </View>
+          <View style={styles.headerIcons}>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="search" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton}>
+              <Ionicons name="notifications" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Around the world</Text>
-      </View>
+        <View style={styles.currentLocationCard}>
+          <LinearGradient
+            colors={["rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 0.1)"]}
+            style={styles.locationGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.locationContent}>
+              <View>
+                <Text style={styles.locationLabel}>Current location</Text>
+                <Text style={styles.locationName}>Yaoundé</Text>
+                <Text style={styles.locationWeather}>Thunder</Text>
+              </View>
+              <View style={styles.locationTemp}>
+                <Text style={styles.tempValue}>20°C</Text>
+                <WeatherIcon description="orage" size={32} color="#FFFFFF" />
+              </View>
+            </View>
+          </LinearGradient>
+        </View>
 
-      <FlatList
-        data={cities}
-        keyExtractor={(item) => item.name}
-        renderItem={({ item }) => <CityWeatherCard city={item} onPress={() => handleCityPress(item)} />}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-      />
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Around the world</Text>
+        </View>
+
+        <FlatList
+          data={cities}
+          keyExtractor={(item) => item.name}
+          renderItem={({ item }) => <CityWeatherCard city={item} onPress={() => handleCityPress(item)} />}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        />
+      </ScrollView>
     </LinearGradient>
   )
 }

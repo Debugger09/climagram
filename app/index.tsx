@@ -34,7 +34,7 @@ export default function WelcomeScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={() => router.push("/cities")}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push("/feed")}>
           <Text style={styles.buttonText}>Get started</Text>
         </TouchableOpacity>
 

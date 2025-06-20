@@ -1,8 +1,4 @@
-export type MoodOption = {
-  value: string;
-  label: string;
-  color: string;
-};
+// Ce fichier ne doit plus contenir de type Post ou MoodOption. Utilise uniquement les types de types/index.ts.
 
 export type Weather = {
   temp: number;
@@ -11,21 +7,6 @@ export type Weather = {
   windSpeed: number;
   icon: string;
   main: string;
-};
-
-export type Post = {
-  id: string;
-  content?: string;
-  comment: string;
-  mood: MoodOption;
-  city: string;
-  lat: number;
-  lon: number;
-  weather: Weather;
-  timestamp: string;
-  userId?: string;
-  likes?: number;
-  comments?: Comment[];
 };
 
 export type Comment = {

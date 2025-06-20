@@ -1,8 +1,9 @@
 "use client"
 
-import type { Post } from "@/types/post"
+import type { Post } from "@/types"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useCallback, useEffect, useState } from "react"
+import { mockPosts } from "../data/mockPosts"
 
 const POSTS_STORAGE_KEY = "climagram_posts"
 
@@ -17,7 +18,14 @@ export async function savePosts(posts: Post[]) {
 export async function loadPosts(): Promise<Post[]> {
   try {
     const postsJson = await AsyncStorage.getItem(POSTS_STORAGE_KEY)
-    return postsJson ? JSON.parse(postsJson) : []
+    let posts: Post[] = postsJson ? JSON.parse(postsJson) : [];
+    // Si aucun post utilisateur, injecter des posts mockés à son nom
+    if (!posts || posts.length === 0) {
+      // On clone les posts mockés et on met userId à '1' (ou l'id courant si besoin)
+      posts = mockPosts.map(post => ({ ...post }));
+      await AsyncStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+    }
+    return posts;
   } catch (error) {
     console.error("Error loading posts:", error)
     return []

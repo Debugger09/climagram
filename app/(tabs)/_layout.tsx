@@ -32,11 +32,11 @@ export default function TabLayout() {
       <Tabs.Screen
         name="cities"
         options={{
-          title: "Villes",
+          title: "Mon journal météo",
           tabBarIcon: ({ color }) => (
             <Ionicons name="location" size={24} color={color} />
           ),
-          headerTitle: "Météo des villes",
+          headerTitle: "Mon journal météo",
         }}
       />
       <Tabs.Screen
@@ -52,9 +52,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Moi",
+          title: "Mes posts météo",
           tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
-          headerTitle: "Mon journal météo",
+          headerTitle: "Mes posts météo",
         }}
       />
     </Tabs>

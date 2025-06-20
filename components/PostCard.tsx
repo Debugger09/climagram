@@ -1,126 +1,63 @@
-import { Ionicons } from "@expo/vector-icons";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import type { Post } from "@/types";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Post } from "../types";
-import WeatherIcon from "./WeatherIcon";
+import { Image, Platform, StyleSheet, Text, View } from "react-native";
 
 const getMoodEmoji = (mood: Post["mood"]) => {
   switch (mood) {
     case "heureux":
       return "😊";
-    case "triste":
-      return "😢";
-    case "energique":
-      return "⚡";
-    case "fatigue":
+    case "fatigué":
       return "😴";
-    default:
+    case "apathique":
       return "😐";
-  }
-};
-
-const getMoodColor = (mood: Post["mood"]) => {
-  switch (mood) {
-    case "heureux":
-      return "#FFD700";
-    case "triste":
-      return "#87CEEB";
-    case "energique":
-      return "#FF4500";
-    case "fatigue":
-      return "#9370DB";
+    case "énergique":
+      return "⚡";
     default:
-      return "#A9A9A9";
+      return "";
   }
-};
-
-const getWeatherIcon = (icon: string) => {
-  const iconMap: { [key: string]: string } = {
-    "01d": "sunny",
-    "01n": "moon",
-    "02d": "partly-sunny",
-    "02n": "cloudy-night",
-    "03d": "cloudy",
-    "03n": "cloudy",
-    "04d": "cloudy",
-    "04n": "cloudy",
-    "09d": "rainy",
-    "09n": "rainy",
-    "10d": "rainy",
-    "10n": "rainy",
-    "11d": "thunderstorm",
-    "11n": "thunderstorm",
-    "13d": "snow",
-    "13n": "snow",
-    "50d": "water",
-    "50n": "water",
-  };
-  return iconMap[icon] || "partly-sunny";
 };
 
 export const PostCard: React.FC<{ post: Post }> = ({ post }) => {
-  const formattedDate = format(new Date(post.timestamp), "d MMMM yyyy", {
-    locale: fr,
+  const date = new Date(post.timestamp);
+  const formattedDate = date.toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   return (
     <View style={styles.card}>
+      <Image
+        source={{ uri: post.image || 'https://picsum.photos/400/400?blur=2&grayscale' }}
+        style={styles.postImage}
+      />
       <View style={styles.header}>
-        <View style={styles.locationContainer}>
-          <Ionicons name="location" size={20} color="#666" />
-          <Text style={styles.location}>{post.city}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Image
+            source={{ uri: post.avatar || 'https://i.pravatar.cc/150?img=1' }}
+            style={styles.avatar}
+          />
+          <View>
+            <Text style={styles.city}>{post.city}</Text>
+            <Text style={styles.username}>{post.username}</Text>
+          </View>
         </View>
         <Text style={styles.date}>{formattedDate}</Text>
       </View>
-
-      <View style={styles.weatherContainer}>
-        <View style={styles.weatherInfo}>
-          <WeatherIcon description={post.weather.description} size={40} color="#666" />
-          <View>
-            <Text style={styles.temperature}>
-              {Math.round(post.weather.temp)}°C
-            </Text>
-            <Text style={styles.description}>
-              {post.weather.description}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.weatherDetails}>
-          <View style={styles.detail}>
-            <Ionicons name="water" size={16} color="#666" />
-            <Text style={styles.detailText}>
-              {post.weather.humidity}%
-            </Text>
-          </View>
-          <View style={styles.detail}>
-            <Ionicons name="speedometer" size={16} color="#666" />
-            <Text style={styles.detailText}>
-              {post.weather.pressure} hPa
-            </Text>
-          </View>
-          <View style={styles.detail}>
-            <Ionicons name="cloud" size={16} color="#666" />
-            <Text style={styles.detailText}>
-              {post.weather.clouds}%
-            </Text>
-          </View>
-        </View>
+      <View style={styles.weatherRow}>
+        <Image
+          source={{ uri: `https://openweathermap.org/img/wn/${post.weather.icon}@2x.png` }}
+          style={{ width: 32, height: 32, marginRight: 8 }}
+        />
+        <Text style={styles.temp}>{Math.round(post.weather.temp)}°C</Text>
+        <Text style={styles.weatherDesc}>{post.weather.description}</Text>
       </View>
-
-      <View style={styles.moodContainer}>
-        <View
-          style={[
-            styles.moodBadge,
-            { backgroundColor: getMoodColor(post.mood) },
-          ]}
-        >
-          <Text style={styles.moodEmoji}>{getMoodEmoji(post.mood)}</Text>
-          <Text style={styles.moodText}>{post.mood}</Text>
-        </View>
+      <View style={styles.moodRow}>
+        <Text style={styles.moodEmoji}>{getMoodEmoji(post.mood)}</Text>
+        <Text style={styles.moodText}>{post.mood}</Text>
       </View>
-
       <Text style={styles.comment}>{post.comment}</Text>
     </View>
   );
@@ -133,97 +70,84 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 8,
     marginHorizontal: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }
+      : {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 3.84,
+          elevation: 5,
+        }),
+  },
+  postImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 10,
+    backgroundColor: "#f5f5f5",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
-  },
-  locationContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  location: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 5,
-    color: "#333",
-  },
-  date: {
-    fontSize: 14,
-    color: "#666",
-  },
-  weatherContainer: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-  },
-  weatherInfo: {
-    flexDirection: "row",
-    alignItems: "center",
     marginBottom: 10,
   },
-  temperature: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginLeft: 10,
-  },
-  description: {
+  city: {
     fontSize: 16,
+    fontWeight: "bold",
+    color: "#1e3c72",
+  },
+  date: {
+    fontSize: 13,
     color: "#666",
-    marginLeft: 10,
+  },
+  weatherRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    gap: 8,
+  },
+  temp: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2a5298",
+    marginRight: 8,
+  },
+  weatherDesc: {
+    fontSize: 15,
+    color: "#666",
     textTransform: "capitalize",
   },
-  weatherDetails: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    paddingTop: 10,
-  },
-  detail: {
+  moodRow: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  detailText: {
-    marginLeft: 5,
-    color: "#666",
-    fontSize: 14,
-  },
-  moodContainer: {
-    marginBottom: 15,
-  },
-  moodBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    marginBottom: 8,
+    gap: 8,
   },
   moodEmoji: {
     fontSize: 18,
     marginRight: 5,
   },
   moodText: {
-    color: "white",
-    fontWeight: "600",
+    fontSize: 15,
+    color: "#333",
     textTransform: "capitalize",
   },
   comment: {
     fontSize: 16,
     color: "#333",
     lineHeight: 22,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+    backgroundColor: '#eee',
+  },
+  username: {
+    fontSize: 13,
+    color: '#444',
   },
 });
